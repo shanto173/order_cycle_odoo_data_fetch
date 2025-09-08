@@ -13,6 +13,7 @@ on:
           - Order_realsed.py
           - Production_data_fetch.py
           - Fg_delivery.py
+          - PI_data.py
       from_date:
         description: 'From date (YYYY-MM-DD)'
         required: false
@@ -75,3 +76,14 @@ jobs:
           ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
           FROM_DATE: ${{ github.event.inputs.from_date || '' }}
           TO_DATE: ${{ github.event.inputs.to_date || '' }}
+
+      - name: Run PI_data script
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'PI_data.py' || github.event.inputs.script_name == 'ALL' }}
+        run: python PI_data.py
+        env:
+            ODOO_URL: ${{ secrets.ODOO_URL }}
+            ODOO_DB: ${{ secrets.ODOO_DB }}
+            ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+            FROM_DATE: ${{ github.event.inputs.from_date || '' }}
+            TO_DATE: ${{ github.event.inputs.to_date || '' }}          
