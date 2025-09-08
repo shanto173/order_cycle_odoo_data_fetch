@@ -22,7 +22,7 @@ on:
         description: 'To date (YYYY-MM-DD)'
         required: false
   schedule:
-    - cron: '0 6 * * *'  # every day at 6:00 AM UTC (~12 PM Dhaka)
+    - cron: '*/30 * * * *'  # every 30 minutes
 
 jobs:
   run-odoo-report:
