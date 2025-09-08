@@ -12,6 +12,7 @@ on:
           - ALL
           - Order_realsed.py
           - Production_data_fetch.py
+          - Fg_delivery.py
       from_date:
         description: 'From date (YYYY-MM-DD)'
         required: false
@@ -56,6 +57,17 @@ jobs:
       - name: Run Production Data Fetch script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'Production_data_fetch.py' || github.event.inputs.script_name == 'ALL' }}
         run: python Production_data_fetch.py
+        env:
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+          FROM_DATE: ${{ github.event.inputs.from_date || '' }}
+          TO_DATE: ${{ github.event.inputs.to_date || '' }}
+
+      - name: Run FG Delivery script
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'Fg_delivery.py' || github.event.inputs.script_name == 'ALL' }}
+        run: python Fg_delivery.py
         env:
           ODOO_URL: ${{ secrets.ODOO_URL }}
           ODOO_DB: ${{ secrets.ODOO_DB }}
