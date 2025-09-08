@@ -192,20 +192,20 @@ for company_id, cname in COMPANIES.items():
                     sheet_pcs = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("OA Data")
                     sheet_usd = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("OA Value")
                     
-                    df_released_pcs = pd.read_excel(df_sheet1,sheet_name=0)
+                    df_released_pcs = pd.read_excel(filename,sheet_name=0)
                     print("File loaded into DataFrame.")
 
-                    df_released_usd = pd.read_excel(df_sheet1,sheet_name=1)
+                    df_released_usd = pd.read_excel(filename,sheet_name=1)
                     print("File loaded into DataFrame.")
                     
                 elif company_id == 3:  # Metal Trims
                     sheet_pcs = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("MT OA Data")
                     sheet_usd = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("MT OA Value")
                     
-                    df_released_pcs = pd.read_excel(df_sheet1,sheet_name=0)
+                    df_released_pcs = pd.read_excel(filename,sheet_name=0)
                     print("File loaded into DataFrame.")
 
-                    df_released_usd = pd.read_excel(df_sheet1,sheet_name=1)
+                    df_released_usd = pd.read_excel(filename,sheet_name=1)
                     print("File loaded into DataFrame.")
 
                 # === Paste OA Data (pcs) ===
