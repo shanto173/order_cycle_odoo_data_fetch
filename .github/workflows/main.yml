@@ -3,6 +3,15 @@ name: Odoo Stock Report Automation
 on:
   workflow_dispatch:
     inputs:
+      script_name:
+        description: 'Select script to run manually'
+        required: true
+        default: 'ALL'
+        type: choice
+        options:
+          - ALL
+          - Order_realsed.py
+          - Production_data_fetch.py
       from_date:
         description: 'From date (YYYY-MM-DD)'
         required: false
@@ -33,8 +42,20 @@ jobs:
       - name: Decode Google creds
         run: echo "${{ secrets.GOOGLE_CREDS_JSON }}" | base64 --decode > gcreds.json
 
-      - name: Run Odoo report script
+      - name: Run Order Released script
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'Order_realsed.py' || github.event.inputs.script_name == 'ALL' }}
         run: python Order_realsed.py
+        env:
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+          FROM_DATE: ${{ github.event.inputs.from_date || '' }}
+          TO_DATE: ${{ github.event.inputs.to_date || '' }}
+
+      - name: Run Production Data Fetch script
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'Production_data_fetch.py' || github.event.inputs.script_name == 'ALL' }}
+        run: python Production_data_fetch.py
         env:
           ODOO_URL: ${{ secrets.ODOO_URL }}
           ODOO_DB: ${{ secrets.ODOO_DB }}
