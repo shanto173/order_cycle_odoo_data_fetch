@@ -31,7 +31,7 @@ ODOO_USERNAME = os.getenv("ODOO_USERNAME")
 ODOO_PASSWORD = os.getenv("ODOO_PASSWORD")
 
 # --------- Google Sheet Config ---------
-SHEET_ID = os.getenv("SHEET_ID")  # or hardcode: "1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k"
+SHEET_ID = os.getenv("1acV7UrmC8ogC54byMrKRTaD9i1b1Cf9QZ-H1qHU5ZZc")  # or hardcode: "1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k"
 creds = Credentials.from_service_account_file("gcreds.json", scopes=["https://www.googleapis.com/auth/spreadsheets"])
 client = gspread.authorize(creds)
 
@@ -158,8 +158,8 @@ def paste_to_gsheet(df, sheet_name):
 if __name__ == "__main__":
     uid = odoo_login()
     for company_id, company_name, sheet_name in [
-        (1, "Zipper", "Zipper PI"),
-        (3, "MetalTrim", "Metal PI")
+        (1, "Zipper", "Zip Pi"),
+        (3, "MetalTrim", "MT PI")
     ]:
         records = fetch_all_data(uid, "2025-06-01", TO_DATE, company_id)
         flat_records = [flatten_record(r) for r in records]
