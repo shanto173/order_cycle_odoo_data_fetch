@@ -25,7 +25,7 @@ PASSWORD = os.getenv("ODOO_PASSWORD")
 
 MODEL = "mrp.report.custom"
 REPORT_BUTTON_METHOD = "action_generate_xlsx_report"
-REPORT_TYPE = "s_invs"
+REPORT_TYPE = "invs"
 
 # Default date range: first-to-last of current month
 today = date.today()
@@ -187,50 +187,21 @@ for company_id, cname in COMPANIES.items():
             # === Load file and paste to Google Sheets ===
             df_sheet1 = pd.read_excel(filename)
             
-            try:
-                if company_id == 1:  # Zipper
-                    sheet_pcs = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("Prod Data")
-                    sheet_usd = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("Prod Value")
-                    
-                    df_released_pcs = pd.read_excel(filename,sheet_name=0)
-                    print("File loaded into DataFrame.")
+            if company_id == 1:  # Zipper Sheets
+                sheet1 = client.open_by_key("1acV7UrmC8ogC54byMrKRTaD9i1b1Cf9QZ-H1qHU5ZZc").worksheet("Production Data")
+            else:  # Metal Trims Sheets
+                sheet1 = client.open_by_key("1acV7UrmC8ogC54byMrKRTaD9i1b1Cf9QZ-H1qHU5ZZc").worksheet("MT_Production_QTY")
 
-                    df_released_usd = pd.read_excel(filename,sheet_name=1)
-                    print("File loaded into DataFrame.")
-                    
-                elif company_id == 3:  # Metal Trims
-                    sheet_pcs = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("MT Prod Data")
-                    sheet_usd = client.open_by_key("1uUcLk27P-wAtgGYrSy7rVFFnw3JpEiJKGAgZICbBd-k").worksheet("MT Prod Value")
-                    
-                    df_released_pcs = pd.read_excel(filename,sheet_name=0)
-                    print("File loaded into DataFrame.")
-
-                    df_released_usd = pd.read_excel(filename,sheet_name=1)
-                    print("File loaded into DataFrame.")
-
-                # === Paste OA Data (pcs) ===
-                if df_released_pcs.empty:
-                    print("Skip: OA Data (pcs) DataFrame is empty, not pasting to sheet.")
+            for df, ws in zip([df_sheet1], [sheet1]):
+                if df.empty:
+                    print("Skip: DataFrame empty, not pasting to sheet.")
                 else:
-                    sheet_pcs.clear()
-                    set_with_dataframe(sheet_pcs, df_released_pcs)
-                    local_time = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
-                    sheet_pcs.update("AC2", [[local_time]])
-                    print(f"✅ OA Data pasted to {sheet_pcs.title}, timestamp {local_time}")
-
-                # === Paste OA Value (usd) ===
-                if df_released_usd.empty:
-                    print("Skip: OA Value (usd) DataFrame is empty, not pasting to sheet.")
-                else:
-                    sheet_usd.batch_clear(["A:AC"])
-                    set_with_dataframe(sheet_usd, df_released_usd)
-                    local_time1 = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
-                    sheet_usd.update("AC2", [[local_time1]])
-                    print(f"✅ OA Value pasted to {sheet_usd.title}, timestamp {local_time1}")
-
-            except Exception as e:
-                print(f"❌ Exception during OA Data/Value paste for {cname}: {e}")
-
+                    df = df.fillna("")
+                    ws.batch_clear(["A:AB"])
+                    set_with_dataframe(ws, df)
+                    timestamp = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
+                    ws.update("AC2", [[timestamp]])
+                    print(f"Data pasted to {ws.title} with timestamp {timestamp}")
 
         else:
             print(f"❌ Failed to download report for {cname}, status={resp.status_code}")
