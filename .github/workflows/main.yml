@@ -102,7 +102,7 @@ jobs:
             FROM_DATE: ${{ github.event.inputs.from_date || '' }}
             TO_DATE: ${{ github.event.inputs.to_date || '' }}   
           
-      - name: Run LC_recv script
+      - name: Run production_dashboard script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'production_dashboard.py' || github.event.inputs.script_name == 'ALL' }}
         run: python production_dashboard.py
         env:

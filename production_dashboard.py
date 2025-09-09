@@ -26,7 +26,7 @@ PASSWORD = os.getenv("ODOO_PASSWORD")
 
 MODEL = "mrp.report.custom"
 REPORT_BUTTON_METHOD = "action_generate_xlsx_report"
-REPORT_TYPE = "invs"
+REPORT_TYPE = "dpr"
 
 # ========= DATE RANGE ==========
 today = date.today()
