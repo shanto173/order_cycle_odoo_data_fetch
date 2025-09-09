@@ -15,6 +15,7 @@ on:
           - Fg_delivery.py
           - PI_data.py
           - LC_recv.py
+          - production_dashboard.py
       from_date:
         description: 'From date (YYYY-MM-DD)'
         required: false
@@ -100,3 +101,12 @@ jobs:
             ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
             FROM_DATE: ${{ github.event.inputs.from_date || '' }}
             TO_DATE: ${{ github.event.inputs.to_date || '' }}   
+          
+      - name: Run LC_recv script
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'production_dashboard.py' || github.event.inputs.script_name == 'ALL' }}
+        run: python production_dashboard.py
+        env:
+            ODOO_URL: ${{ secrets.ODOO_URL }}
+            ODOO_DB: ${{ secrets.ODOO_DB }}
+            ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}  
