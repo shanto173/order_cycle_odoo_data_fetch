@@ -88,7 +88,7 @@ def main():
 
     # 3. Filter July 1 to today
     today = pd.Timestamp.today().normalize()
-    start_date = pd.Timestamp("2025-07-01")
+    start_date = pd.Timestamp("2024-04-01")
     df = df[(df['Release Date'] >= start_date) & (df['Release Date'] <= today)]
 
     # 4. Group & aggregate
