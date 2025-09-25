@@ -16,6 +16,7 @@ on:
           - PI_data.py
           - LC_recv.py
           - production_dashboard.py
+          - slider_wise_order_realsed.py
       from_date:
         description: 'From date (YYYY-MM-DD)'
         required: false
@@ -109,4 +110,13 @@ jobs:
             ODOO_URL: ${{ secrets.ODOO_URL }}
             ODOO_DB: ${{ secrets.ODOO_DB }}
             ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
-            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}  
+            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+            
+      - name: Run slider_wise_order_realsed
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'slider_wise_order_realsed.py' || github.event.inputs.script_name == 'ALL' }}
+        run: python slider_wise_order_realsed.py
+        env:
+            ODOO_URL: ${{ secrets.ODOO_URL }}
+            ODOO_DB: ${{ secrets.ODOO_DB }}
+            ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
