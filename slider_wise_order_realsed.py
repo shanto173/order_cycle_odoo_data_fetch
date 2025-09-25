@@ -99,6 +99,19 @@ def main():
         Avg_Unit_Price=("Unit Price", lambda x: np.mean(pd.to_numeric(x, errors='coerce')))
     )
 
+    # Normalizing the Category
+    
+    category_map = (
+    grouped[(grouped["Category"] != "Others") & (grouped["TZP_Type"] == "STD")]
+    .groupby("TZP_Code")["Category"]
+    .agg(lambda x: x.mode()[0])  # most frequent category if multiple
+    .to_dict()
+    )
+
+    # Step 2: replace "Others" in STD rows using the mapping
+    mask = (grouped["TZP_Type"] == "STD") & (grouped["Category"] == "Others")
+    grouped.loc[mask, "Category"] = grouped.loc[mask, "TZP_Code"].map(category_map)
+        
     # 5. Sort
     grouped["TZP_Type"] = pd.Categorical(grouped["TZP_Type"], categories=["STD","SPEC"], ordered=True)
     grouped = grouped.sort_values(by=["TZP_Type", "Quantity_PCS_sum"], ascending=[True, False])
