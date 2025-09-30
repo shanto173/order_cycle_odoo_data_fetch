@@ -4,7 +4,7 @@ import re
 import logging
 import sys
 import os
-from datetime import date, datetime
+from datetime import date, datetime,timedelta
 import gspread
 from gspread_dataframe import set_with_dataframe
 from google.oauth2 import service_account
@@ -32,10 +32,21 @@ today = date.today()
 from_date_env = os.getenv("FROM_DATE", "").strip()
 to_date_env = os.getenv("TO_DATE", "").strip()
 
-FROM_DATE = from_date_env if from_date_env else today.replace(day=1).isoformat()
-TO_DATE = to_date_env if to_date_env else today.isoformat()
+first_day_this_month = today.replace(day=1)
+
+if today.day in (1, 2):
+    # Previous month range
+    last_day_prev_month = first_day_this_month - timedelta(days=1)
+    prev_month_first = last_day_prev_month.replace(day=1)
+    
+    FROM_DATE = from_date_env if from_date_env else prev_month_first.isoformat()
+    TO_DATE = to_date_env if to_date_env else last_day_prev_month.isoformat()
+else:
+    FROM_DATE = from_date_env if from_date_env else first_day_this_month.isoformat()
+    TO_DATE = to_date_env if to_date_env else today.isoformat()
 
 log.info(f"Using FROM_DATE={FROM_DATE}, TO_DATE={TO_DATE}")
+
 
 COMPANIES = {
     1: "Zipper",
