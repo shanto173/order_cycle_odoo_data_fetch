@@ -159,62 +159,77 @@ for company_id, cname in COMPANIES.items():
     resp.raise_for_status()
     report_info = resp.json().get("result")
     print("✅ Report info received for", cname)
+    
+    max_retries = 10
+    attempt = 0
+    success = False
 
-    csrf_token = refresh_csrf()
-    if company_id == 1:  # Zipper
-        time.sleep(10)
+    while attempt < max_retries and not success:
+        attempt += 1
+        print(f"🔄 Attempt {attempt}/{max_retries} for {cname}")
 
-    options = {"date_from": FROM_DATE, "date_to": TO_DATE, "company_id": company_id}
-    context = {
-        "lang": "en_US",
-        "tz": "Asia/Dhaka",
-        "uid": uid,
-        "allowed_company_ids": [company_id],
-        "active_model": MODEL,
-        "active_id": wizard_id,
-        "active_ids": [wizard_id]
-    }
+        csrf_token = refresh_csrf()
+        if company_id == 1:  # Zipper
+            time.sleep(10)
 
-    REPORT_TEMPLATE = report_info.get("report_name") or "taps_manufacturing.pi_xls_template"
-    report_path = f"/report/xlsx/{REPORT_TEMPLATE}?options={json.dumps(options)}&context={json.dumps(context)}"
-    download_payload = {
-        "data": json.dumps([report_path, "xlsx"]),
-        "context": json.dumps(context),
-        "token": "dummy-because-api-expects-one",
-        "csrf_token": csrf_token
-    }
+        options = {"date_from": FROM_DATE, "date_to": TO_DATE, "company_id": company_id}
+        context = {
+            "lang": "en_US",
+            "tz": "Asia/Dhaka",
+            "uid": uid,
+            "allowed_company_ids": [company_id],
+            "active_model": MODEL,
+            "active_id": wizard_id,
+            "active_ids": [wizard_id]
+        }
 
-    download_url = f"{ODOO_URL}/report/download"
-    headers = {"X-CSRF-Token": csrf_token, "Referer": f"{ODOO_URL}/web"}
+        REPORT_TEMPLATE = report_info.get("report_name") or "taps_manufacturing.pi_xls_template"
+        report_path = f"/report/xlsx/{REPORT_TEMPLATE}?options={json.dumps(options)}&context={json.dumps(context)}"
+        download_payload = {
+            "data": json.dumps([report_path, "xlsx"]),
+            "context": json.dumps(context),
+            "token": "dummy-because-api-expects-one",
+            "csrf_token": csrf_token
+        }
 
-    try:
-        resp = session.post(download_url, data=download_payload, headers=headers, timeout=60)
-        if resp.status_code == 200 and "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" in resp.headers.get("content-type", ""):
-            filename = Path(download_dir) / f"{cname.replace(' ', '_')}_{REPORT_TYPE}_{FROM_DATE}_to_{TO_DATE}.xlsx"
-            with open(filename, "wb") as f:
-                f.write(resp.content)
-            print(f"✅ Report downloaded for {cname}: {filename}")
+        download_url = f"{ODOO_URL}/report/download"
+        headers = {"X-CSRF-Token": csrf_token, "Referer": f"{ODOO_URL}/web"}
 
-            # === Load file and paste to Google Sheets ===
-            df_sheet1 = pd.read_excel(filename)
-            
-            if company_id == 1:  # Zipper Sheets
-                sheet1 = client.open_by_key("1acV7UrmC8ogC54byMrKRTaD9i1b1Cf9QZ-H1qHU5ZZc").worksheet("Production Data")
-            else:  # Metal Trims Sheets
-                sheet1 = client.open_by_key("1acV7UrmC8ogC54byMrKRTaD9i1b1Cf9QZ-H1qHU5ZZc").worksheet("MT_Production_QTY")
+        try:
+            resp = session.post(download_url, data=download_payload, headers=headers, timeout=60)
+            if resp.status_code == 200 and "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" in resp.headers.get("content-type", ""):
+                filename = Path(download_dir) / f"{cname.replace(' ', '_')}_{REPORT_TYPE}_{FROM_DATE}_to_{TO_DATE}.xlsx"
+                with open(filename, "wb") as f:
+                    f.write(resp.content)
+                print(f"✅ Report downloaded for {cname}: {filename}")
 
-            for df, ws in zip([df_sheet1], [sheet1]):
-                if df.empty:
-                    print("Skip: DataFrame empty, not pasting to sheet.")
-                else:
-                    df = df.fillna("")
-                    ws.batch_clear(["A:AB"])
-                    set_with_dataframe(ws, df)
-                    timestamp = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
-                    ws.update("AC2", [[timestamp]])
-                    print(f"Data pasted to {ws.title} with timestamp {timestamp}")
+                # === Load file and paste to Google Sheets ===
+                df_sheet1 = pd.read_excel(filename)
+                
+                if company_id == 1:  # Zipper Sheets
+                    sheet1 = client.open_by_key("1acV7UrmC8ogC54byMrKRTaD9i1b1Cf9QZ-H1qHU5ZZc").worksheet("Production Data")
+                else:  # Metal Trims Sheets
+                    sheet1 = client.open_by_key("1acV7UrmC8ogC54byMrKRTaD9i1b1Cf9QZ-H1qHU5ZZc").worksheet("MT_Production_QTY")
 
-        else:
-            print(f"❌ Failed to download report for {cname}, status={resp.status_code}")
-    except Exception as e:
-        print(f"❌ Exception during download/paste for {cname}: {e}")
+                for df, ws in zip([df_sheet1], [sheet1]):
+                    if df.empty:
+                        print("Skip: DataFrame empty, not pasting to sheet.")
+                    else:
+                        df = df.fillna("")
+                        ws.batch_clear(["A:AB"])
+                        set_with_dataframe(ws, df)
+                        timestamp = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
+                        ws.update("AC2", [[timestamp]])
+                        print(f"Data pasted to {ws.title} with timestamp {timestamp}")
+
+                success = True  # ✅ mark success to exit retry loop
+            else:
+                print(f"❌ Failed to download report for {cname}, status={resp.status_code}")
+                time.sleep(5)  # small delay before retry
+
+        except Exception as e:
+            print(f"❌ Exception during download/paste for {cname} (attempt {attempt}): {e}")
+            time.sleep(5)  # wait before retry
+
+    if not success:
+        print(f"🚨 Skipped {cname} after {max_retries} failed attempts")
