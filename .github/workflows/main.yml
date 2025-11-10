@@ -23,8 +23,8 @@ on:
       to_date:
         description: 'To date (YYYY-MM-DD)'
         required: false
-  # schedule:
-  #   - cron: '*/30 * * * *'  # every 30 minutes
+  schedule:
+    - cron: '0 */2 * * *'
 
 jobs:
   run-odoo-report:
