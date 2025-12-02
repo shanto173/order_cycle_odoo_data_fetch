@@ -19,7 +19,7 @@ args = parser.parse_args()
 today = datetime.today()
 first_day = today.replace(day=1)
 
-if today.day in (1, 2):
+if today.day in (1, 1):
     # Previous month range
     last_day_prev_month = first_day - timedelta(days=1)
     prev_month_first = last_day_prev_month.replace(day=1)

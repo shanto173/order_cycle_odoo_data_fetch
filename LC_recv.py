@@ -19,15 +19,15 @@ args = parser.parse_args()
 today = datetime.today()
 first_day = today.replace(day=1)
 
-if today.day in (1, 2):
+if today.day in (1, 1):
     # Previous month range
     last_day_prev_month = first_day - timedelta(days=1)
     prev_month_first = last_day_prev_month.replace(day=1)
-    FROM_DATE = args.from_date if getattr(args, 'from_date', None) else prev_month_first.strftime("%Y-%m-%d 00:00:00")
-    TO_DATE = args.to_date if getattr(args, 'to_date', None) else last_day_prev_month.strftime("%Y-%m-%d 23:59:59")
+    FROM_DATE = args.from_date if args.from_date is not None and args.from_date != '' else prev_month_first.strftime("%Y-%m-%d 00:00:00")
+    TO_DATE = args.to_date if args.to_date is not None and args.to_date != '' else last_day_prev_month.strftime("%Y-%m-%d 23:59:59")
 else:
-    FROM_DATE = args.from_date if getattr(args, 'from_date', None) else first_day.strftime("%Y-%m-%d 00:00:00")
-    TO_DATE = args.to_date if getattr(args, 'to_date', None) else today.strftime("%Y-%m-%d 23:59:59")
+    FROM_DATE = args.from_date if args.from_date is not None and args.from_date != '' else first_day.strftime("%Y-%m-%d 00:00:00")
+    TO_DATE = args.to_date if args.to_date is not None and args.to_date != '' else today.strftime("%Y-%m-%d 23:59:59")
 
 print(f"📅 Fetching data from {FROM_DATE} to {TO_DATE}")
 

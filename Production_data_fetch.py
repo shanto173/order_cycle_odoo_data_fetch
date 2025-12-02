@@ -34,7 +34,7 @@ to_date_env = os.getenv("TO_DATE", "").strip()
 
 first_day_this_month = today.replace(day=1)
 
-if today.day in (1, 2):
+if today.day in (1, 1):
     # Previous month range
     last_day_prev_month = first_day_this_month - timedelta(days=1)
     prev_month_first = last_day_prev_month.replace(day=1)
