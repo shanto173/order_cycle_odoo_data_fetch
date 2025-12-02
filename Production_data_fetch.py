@@ -160,7 +160,7 @@ for company_id, cname in COMPANIES.items():
     report_info = resp.json().get("result")
     print("✅ Report info received for", cname)
     
-    max_retries = 10
+    max_retries = 2
     attempt = 0
     success = False
 
