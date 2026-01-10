@@ -18,11 +18,13 @@ on:
           - production_dashboard.py
           - slider_wise_order_realsed.py
       from_date:
-        description: 'From date (YYYY-MM-DD)'
+        description: 'From date (YYYY-MM-DD HH:MM:SS or YYYY-MM-DD)'
         required: false
+        default: ''
       to_date:
-        description: 'To date (YYYY-MM-DD)'
+        description: 'To date (YYYY-MM-DD HH:MM:SS or YYYY-MM-DD)'
         required: false
+        default: ''
   schedule:
     - cron: '0 */4 * * *'
 
@@ -49,74 +51,63 @@ jobs:
 
       - name: Run Order Released script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'Order_realsed.py' || github.event.inputs.script_name == 'ALL' }}
-        run: python Order_realsed.py
+        run: python Order_realsed.py --from_date "${{ github.event.inputs.from_date }}" --to_date "${{ github.event.inputs.to_date }}"
         env:
           ODOO_URL: ${{ secrets.ODOO_URL }}
           ODOO_DB: ${{ secrets.ODOO_DB }}
           ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
           ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
-          FROM_DATE: ${{ github.event.inputs.from_date || '' }}
-          TO_DATE: ${{ github.event.inputs.to_date || '' }}
 
       - name: Run Production Data Fetch script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'Production_data_fetch.py' || github.event.inputs.script_name == 'ALL' }}
-        run: python Production_data_fetch.py
+        run: python Production_data_fetch.py --from_date "${{ github.event.inputs.from_date }}" --to_date "${{ github.event.inputs.to_date }}"
         env:
           ODOO_URL: ${{ secrets.ODOO_URL }}
           ODOO_DB: ${{ secrets.ODOO_DB }}
           ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
           ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
-          FROM_DATE: ${{ github.event.inputs.from_date || '' }}
-          TO_DATE: ${{ github.event.inputs.to_date || '' }}
 
       - name: Run FG Delivery script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'Fg_delivery.py' || github.event.inputs.script_name == 'ALL' }}
-        run: python Fg_delivery.py
+        run: python Fg_delivery.py --from_date "${{ github.event.inputs.from_date }}" --to_date "${{ github.event.inputs.to_date }}"
         env:
           ODOO_URL: ${{ secrets.ODOO_URL }}
           ODOO_DB: ${{ secrets.ODOO_DB }}
           ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
           ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
-          FROM_DATE: ${{ github.event.inputs.from_date || '' }}
-          TO_DATE: ${{ github.event.inputs.to_date || '' }}
 
       - name: Run PI_data script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'PI_data.py' || github.event.inputs.script_name == 'ALL' }}
-        run: python PI_data.py
+        run: python PI_data.py --from_date "${{ github.event.inputs.from_date }}" --to_date "${{ github.event.inputs.to_date }}"
         env:
-            ODOO_URL: ${{ secrets.ODOO_URL }}
-            ODOO_DB: ${{ secrets.ODOO_DB }}
-            ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
-            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
-            FROM_DATE: ${{ github.event.inputs.from_date || '' }}
-            TO_DATE: ${{ github.event.inputs.to_date || '' }}   
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
 
-            
       - name: Run LC_recv script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'LC_recv.py' || github.event.inputs.script_name == 'ALL' }}
-        run: python LC_recv.py
+        run: python LC_recv.py --from_date "${{ github.event.inputs.from_date }}" --to_date "${{ github.event.inputs.to_date }}"
         env:
-            ODOO_URL: ${{ secrets.ODOO_URL }}
-            ODOO_DB: ${{ secrets.ODOO_DB }}
-            ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
-            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
-            FROM_DATE: ${{ github.event.inputs.from_date || '' }}
-            TO_DATE: ${{ github.event.inputs.to_date || '' }}   
-          
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+
       - name: Run production_dashboard script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'production_dashboard.py' || github.event.inputs.script_name == 'ALL' }}
         run: python production_dashboard.py
         env:
-            ODOO_URL: ${{ secrets.ODOO_URL }}
-            ODOO_DB: ${{ secrets.ODOO_DB }}
-            ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
-            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
-            
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+
       - name: Run slider_wise_order_realsed
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'slider_wise_order_realsed.py' || github.event.inputs.script_name == 'ALL' }}
         run: python slider_wise_order_realsed.py
         env:
-            ODOO_URL: ${{ secrets.ODOO_URL }}
-            ODOO_DB: ${{ secrets.ODOO_DB }}
-            ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
-            ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}

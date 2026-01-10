@@ -19,20 +19,23 @@ args = parser.parse_args()
 today = datetime.today()
 first_day = today.replace(day=1)
 
-# Use args if provided, otherwise use default monthly range
-if args.from_date and args.to_date:
-    FROM_DATE = args.from_date
-    TO_DATE = args.to_date
+# Use args if provided (not None and not empty string), otherwise use default monthly range
+if args.from_date and args.from_date.strip() and args.to_date and args.to_date.strip():
+    FROM_DATE = args.from_date.strip()
+    TO_DATE = args.to_date.strip()
+    print(f"Using provided dates from arguments")
 elif today.day == 1:
     # On first day of month, use previous month range
     last_day_prev_month = first_day - timedelta(days=1)
     prev_month_first = last_day_prev_month.replace(day=1)
     FROM_DATE = prev_month_first.strftime("%Y-%m-%d 00:00:00")
     TO_DATE = last_day_prev_month.strftime("%Y-%m-%d 23:59:59")
+    print(f"Using previous month range (day 1 of month)")
 else:
     # Use current month range
     FROM_DATE = first_day.strftime("%Y-%m-%d 00:00:00")
     TO_DATE = today.strftime("%Y-%m-%d 23:59:59")
+    print(f"Using current month range")
 
 print(f"📅 Fetching data from {FROM_DATE} to {TO_DATE}")
 
@@ -167,10 +170,10 @@ def paste_to_gsheet(df):
     set_with_dataframe(worksheet, df)
     print("✅ Data pasted to Google Sheet (Lc recv).")
 
-    # Add timestamp
+    # Add timestamp (fix deprecated warning)
     local_tz = pytz.timezone('Asia/Dhaka')
     local_time = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
-    worksheet.update("AC2", [[f"{local_time}"]])
+    worksheet.update(values=[[f"{local_time}"]], range_name="AC2")
     print(f"Timestamp written to AC2: {local_time}")
 
 # --------- Main ---------
