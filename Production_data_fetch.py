@@ -27,23 +27,34 @@ MODEL = "mrp.report.custom"
 REPORT_BUTTON_METHOD = "action_generate_xlsx_report"
 REPORT_TYPE = "invs"
 
-# Default date range: first-to-last of current month
+import argparse
+
+# --------- Read args or default ---------
+parser = argparse.ArgumentParser()
+parser.add_argument("--from_date", type=str, default=None)
+parser.add_argument("--to_date", type=str, default=None)
+args = parser.parse_args()
+
+# Default date range logic
 today = date.today()
 from_date_env = os.getenv("FROM_DATE", "").strip()
 to_date_env = os.getenv("TO_DATE", "").strip()
 
 first_day_this_month = today.replace(day=1)
 
-if today.day in (1, 1):
-    # Previous month range
+# Logic for determining defaults
+if today.day == 1:
     last_day_prev_month = first_day_this_month - timedelta(days=1)
     prev_month_first = last_day_prev_month.replace(day=1)
-    
-    FROM_DATE = from_date_env if from_date_env else prev_month_first.isoformat()
-    TO_DATE = to_date_env if to_date_env else last_day_prev_month.isoformat()
+    default_from = prev_month_first.isoformat()
+    default_to = last_day_prev_month.isoformat()
 else:
-    FROM_DATE = from_date_env if from_date_env else first_day_this_month.isoformat()
-    TO_DATE = to_date_env if to_date_env else today.isoformat()
+    default_from = first_day_this_month.isoformat()
+    default_to = today.isoformat()
+
+# Prioritization: Args > Env > Default
+FROM_DATE = args.from_date if args.from_date else (from_date_env if from_date_env else default_from)
+TO_DATE = args.to_date if args.to_date else (to_date_env if to_date_env else default_to)
 
 log.info(f"Using FROM_DATE={FROM_DATE}, TO_DATE={TO_DATE}")
 

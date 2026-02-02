@@ -28,12 +28,26 @@ MODEL = "mrp.report.custom"
 REPORT_BUTTON_METHOD = "action_generate_xlsx_report"
 REPORT_TYPE = "dpr"
 
+import argparse
+
+# --------- Read args or default ---------
+parser = argparse.ArgumentParser()
+parser.add_argument("--from_date", type=str, default=None)
+parser.add_argument("--to_date", type=str, default=None)
+args = parser.parse_args()
+
 # ========= DATE RANGE ==========
 today = date.today()
 yesterday = today - pd.Timedelta(days=1)
+from_date_env = os.getenv("FROM_DATE", "").strip()
+to_date_env = os.getenv("TO_DATE", "").strip()
 
-FROM_DATE = yesterday.isoformat()
-TO_DATE = yesterday.isoformat()
+default_from = yesterday.isoformat()
+default_to = yesterday.isoformat()
+
+# Prioritization: Args > Env > Default
+FROM_DATE = args.from_date if args.from_date else (from_date_env if from_date_env else default_from)
+TO_DATE = args.to_date if args.to_date else (to_date_env if to_date_env else default_to)
 
 log.info(f"Using FROM_DATE={FROM_DATE}, TO_DATE={TO_DATE}")
 
