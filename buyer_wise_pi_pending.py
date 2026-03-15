@@ -43,41 +43,47 @@ def odoo_login():
     print(f"✅ Logged in! UID: {uid}")
     return uid
 
-# --------- Fetch all data ---------
+# --------- Fetch all data (sale.order.line level) ---------
 def fetch_all_data(uid, company_id, batch_size=1000):
     all_records = []
     offset = 0
     domain = [
-        "&", ["sales_type", "=", "sale"],
-        "&", "|", ["oa_count", "=", False], ["oa_count", "=", 0],
-        "&", ["is_active", "=", True],
-        "&", ["pi_type", "=", "regular"],
-        ["state", "!=", "cancel"]
+        "&", ["order_id.sales_type", "=", "sale"],
+        "&", "|", ["order_id.oa_count", "=", False], ["order_id.oa_count", "=", 0],
+        "&", ["order_id.is_active", "=", True],
+        "&", ["order_id.pi_type", "=", "regular"],
+        ["order_id.state", "!=", "cancel"]
     ]
     specification = {
-        "name": {},
-        "buyer_name": {"fields": {"display_name": {}}},
-        "buying_house": {"fields": {"display_name": {}}},
-        "partner_id": {"fields": {"display_name": {}}},
-        "company_id": {"fields": {"display_name": {}}},
-        "pi_date": {},
-        "date_order": {},
-        "team_id": {"fields": {"display_name": {}}},
-        "user_id": {"fields": {"display_name": {}}},
-        "total_product_qty": {},
-        "amount_total": {},
-        "amount_invoiced": {},
-        "state": {},
-        "lc_number": {},
-        "payment_term_id": {"fields": {"display_name": {}}},
+        "order_id": {
+            "fields": {
+                "name": {},
+                "buyer_name": {"fields": {"display_name": {}, "brand": {"fields": {"display_name": {}}}}},
+                "buying_house": {"fields": {"display_name": {}}},
+                "company_id": {"fields": {"display_name": {}}},
+                "partner_id": {"fields": {"display_name": {}, "group": {"fields": {"display_name": {}}}}},
+                "pi_date": {},
+                "team_id": {"fields": {"display_name": {}}},
+                "user_id": {"fields": {"display_name": {}}},
+                "lc_number": {},
+                "payment_term_id": {"fields": {"display_name": {}}},
+                "state": {},
+                "pi_type": {}
+            }
+        },
+        "product_template_id": {"fields": {"fg_categ_type": {}}},
+        "product_uom_qty": {},
+        "price_total": {},
+        "slidercodesfg": {},
+        "company_id": {"fields": {"display_name": {}}}
     }
     while True:
-        url = f"{ODOO_URL}/web/dataset/call_kw/sale.order/web_search_read"
+        url = f"{ODOO_URL}/web/dataset/call_kw/sale.order.line/web_search_read"
         payload = {
             "jsonrpc": "2.0",
             "method": "call",
             "params": {
-                "model": "sale.order",
+                "model": "sale.order.line",
                 "method": "web_search_read",
                 "args": [],
                 "kwargs": {
@@ -114,28 +120,52 @@ def fetch_all_data(uid, company_id, batch_size=1000):
 # --------- Flatten record ---------
 def flatten_record(rec):
     flat = {}
-    flat["Order Reference"] = rec.get("name", "")
-    buyer = rec.get("buyer_name", False)
+    order = rec.get("order_id", {}) or {}
+
+    flat["Order Reference"] = order.get("name", "")
+
+    buyer = order.get("buyer_name", False)
     flat["Buyer"] = buyer["display_name"] if buyer else ""
-    buying_house = rec.get("buying_house", False)
+    brand = buyer.get("brand", False) if buyer else False
+    flat["Brand Group"] = brand["display_name"] if brand else ""
+
+    buying_house = order.get("buying_house", False)
     flat["Buying House"] = buying_house["display_name"] if buying_house else ""
-    partner = rec.get("partner_id", False)
+
+    order_company = order.get("company_id", False)
+    flat["Company"] = order_company["display_name"] if order_company else ""
+
+    partner = order.get("partner_id", False)
     flat["Customer"] = partner["display_name"] if partner else ""
-    company = rec.get("company_id", False)
-    flat["Company"] = company["display_name"] if company else ""
-    flat["PI Date"] = rec.get("pi_date", "")
-    flat["Order Date"] = rec.get("date_order", "")
-    team = rec.get("team_id", False)
+    group = partner.get("group", False) if partner else False
+    flat["Customer Group"] = group["display_name"] if group else ""
+
+    flat["PI Date"] = order.get("pi_date", "")
+
+    team = order.get("team_id", False)
     flat["Sales Team"] = team["display_name"] if team else ""
-    user = rec.get("user_id", False)
+
+    user = order.get("user_id", False)
     flat["Salesperson"] = user["display_name"] if user else ""
-    flat["Total Qty"] = rec.get("total_product_qty", "")
-    flat["Total"] = rec.get("amount_total", "")
-    flat["Already Invoiced"] = rec.get("amount_invoiced", "")
-    flat["Status"] = rec.get("state", "")
-    flat["LC Number"] = rec.get("lc_number", "")
-    payment = rec.get("payment_term_id", False)
+
+    product_tmpl = rec.get("product_template_id", False)
+    flat["FG Category"] = product_tmpl.get("fg_categ_type", "") if product_tmpl else ""
+
+    flat["Quantity"] = rec.get("product_uom_qty", "")
+    flat["Total"] = rec.get("price_total", "")
+    flat["Slider Code"] = rec.get("slidercodesfg", "")
+
+    flat["LC Number"] = order.get("lc_number", "")
+
+    payment = order.get("payment_term_id", False)
     flat["Payment Terms"] = payment["display_name"] if payment else ""
+
+    flat["Status"] = order.get("state", "")
+    flat["Type"] = order.get("pi_type", "")
+
+    line_company = rec.get("company_id", False)
+    flat["Line Company"] = line_company["display_name"] if line_company else ""
+
     return flat
 
 # --------- Paste to Google Sheet ---------
@@ -144,14 +174,14 @@ def paste_to_gsheet(df, sheet_name):
     if df.empty:
         print(f"Skip: {sheet_name} DataFrame is empty, not pasting.")
         return
-    worksheet.batch_clear(["A:Q"])
+    worksheet.batch_clear(["A:V"])
     set_with_dataframe(worksheet, df)
     print(f"✅ Data pasted to Google Sheet ({sheet_name}).")
 
     local_tz = pytz.timezone("Asia/Dhaka")
     local_time = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
-    worksheet.update(values=[[f"{local_time}"]], range_name="R2")
-    print(f"Timestamp written to R2: {local_time}")
+    worksheet.update(values=[[f"{local_time}"]], range_name="W2")
+    print(f"Timestamp written to W2: {local_time}")
 
 # --------- Main ---------
 if __name__ == "__main__":
