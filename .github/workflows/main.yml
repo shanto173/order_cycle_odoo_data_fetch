@@ -18,6 +18,7 @@ on:
           - production_dashboard.py
           - slider_wise_order_realsed.py
           - buyer_wise_production_pending.py
+          - buyer_wise_pi_pending.py
       from_date:
         description: 'From date (YYYY-MM-DD HH:MM:SS or YYYY-MM-DD)'
         required: false
@@ -116,6 +117,15 @@ jobs:
       - name: Run buyer_wise_production_pending script
         if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'buyer_wise_production_pending.py' || github.event.inputs.script_name == 'ALL' }}
         run: python buyer_wise_production_pending.py --from_date "${{ github.event.inputs.from_date }}" --to_date "${{ github.event.inputs.to_date }}"
+        env:
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USERNAME: ${{ secrets.ODOO_USERNAME }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+
+      - name: Run buyer_wise_pi_pending script
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.script_name == 'buyer_wise_pi_pending.py' || github.event.inputs.script_name == 'ALL' }}
+        run: python buyer_wise_pi_pending.py
         env:
           ODOO_URL: ${{ secrets.ODOO_URL }}
           ODOO_DB: ${{ secrets.ODOO_DB }}
