@@ -71,7 +71,7 @@ def fetch_all_data(uid, company_id, batch_size=1000):
                 "pi_type": {}
             }
         },
-        "product_template_id": {"fields": {"fg_categ_type": {}}},
+        "product_template_id": {"fields": {"fg_categ_type": {"fields": {"display_name": {}}}}},
         "product_uom_qty": {},
         "price_total": {},
         "slidercodesfg": {},
@@ -149,7 +149,8 @@ def flatten_record(rec):
     flat["Salesperson"] = user["display_name"] if user else ""
 
     product_tmpl = rec.get("product_template_id", False)
-    flat["FG Category"] = product_tmpl.get("fg_categ_type", "") if product_tmpl else ""
+    fg_categ = product_tmpl.get("fg_categ_type", False) if product_tmpl else False
+    flat["FG Category"] = fg_categ["display_name"] if fg_categ else ""
 
     flat["Quantity"] = rec.get("product_uom_qty", "")
     flat["Total"] = rec.get("price_total", "")
