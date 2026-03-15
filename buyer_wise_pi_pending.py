@@ -56,8 +56,8 @@ def fetch_all_data(uid, company_id, batch_size=1000):
     ]
     specification = {
         "name": {},
-        "buyer_name": {},
-        "buying_house": {},
+        "buyer_name": {"fields": {"display_name": {}}},
+        "buying_house": {"fields": {"display_name": {}}},
         "partner_id": {"fields": {"display_name": {}}},
         "company_id": {"fields": {"display_name": {}}},
         "pi_date": {},
@@ -115,8 +115,10 @@ def fetch_all_data(uid, company_id, batch_size=1000):
 def flatten_record(rec):
     flat = {}
     flat["Order Reference"] = rec.get("name", "")
-    flat["Buyer"] = rec.get("buyer_name", "")
-    flat["Buying House"] = rec.get("buying_house", "")
+    buyer = rec.get("buyer_name", False)
+    flat["Buyer"] = buyer["display_name"] if buyer else ""
+    buying_house = rec.get("buying_house", False)
+    flat["Buying House"] = buying_house["display_name"] if buying_house else ""
     partner = rec.get("partner_id", False)
     flat["Customer"] = partner["display_name"] if partner else ""
     company = rec.get("company_id", False)
