@@ -24,12 +24,6 @@ if args.from_date and args.from_date.strip() and args.to_date and args.to_date.s
     FROM_DATE = args.from_date.strip()
     TO_DATE = args.to_date.strip()
     print(f"Using provided dates from arguments")
-elif today.day == 1:
-    last_day_prev_month = first_day - timedelta(days=1)
-    prev_month_first = last_day_prev_month.replace(day=1)
-    FROM_DATE = prev_month_first.strftime("%Y-%m-%d 00:00:00")
-    TO_DATE = last_day_prev_month.strftime("%Y-%m-%d 23:59:59")
-    print(f"Using previous month range (day 1 of month)")
 else:
     FROM_DATE = first_day.strftime("%Y-%m-%d 00:00:00")
     TO_DATE = today.strftime("%Y-%m-%d 23:59:59")
