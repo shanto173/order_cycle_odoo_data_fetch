@@ -129,7 +129,8 @@ def fetch_all_data(uid, from_date, to_date, company_id, batch_size=1000):
 # --------- Flatten record ---------
 def flatten_record(rec):
     flat = {}
-    flat["Action Date"] = rec.get("action_date", "")
+    action_date = rec.get("action_date", "")
+    flat["Action Date"] = action_date[:10] if action_date else ""
     flat["Qty"] = rec.get("qty", "")
     flat["Final Price"] = rec.get("final_price", "")
     partner = rec.get("partner_id", False)
