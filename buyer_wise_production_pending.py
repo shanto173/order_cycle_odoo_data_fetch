@@ -84,7 +84,7 @@ def fetch_all_data(uid, from_date, to_date, company_id, batch_size=1000):
         "product_template_id": {"fields": {"display_name": {}}},
         "slidercodesfg": {},
         "buyer_name": {},
-        "buyer_group": {},
+        "buyer_group": {"fields": {"display_name": {}}},
     }
     while True:
         url = f"{ODOO_URL}/web/dataset/call_kw/operation.details/web_search_read"
@@ -141,7 +141,8 @@ def flatten_record(rec):
     flat["Product"] = product["display_name"] if product else ""
     flat["Slider Code"] = rec.get("slidercodesfg", "")
     flat["Buyer"] = rec.get("buyer_name", "")
-    flat["Buyer Group"] = rec.get("buyer_group", "")
+    buyer_group = rec.get("buyer_group", False)
+    flat["Buyer Group"] = buyer_group["display_name"] if buyer_group else ""
     return flat
 
 # --------- Paste to Google Sheet ---------
