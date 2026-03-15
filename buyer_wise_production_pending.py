@@ -1,7 +1,7 @@
 import requests
 import json
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 import argparse
 import os
 import pytz
@@ -85,6 +85,7 @@ def fetch_all_data(uid, from_date, to_date, company_id, batch_size=1000):
         "slidercodesfg": {},
         "buyer_name": {},
         "buyer_group": {"fields": {"display_name": {}}},
+        "company_id": {"fields": {"display_name": {}}},
     }
     while True:
         url = f"{ODOO_URL}/web/dataset/call_kw/operation.details/web_search_read"
@@ -144,6 +145,8 @@ def flatten_record(rec):
     flat["Buyer"] = rec.get("buyer_name", "")
     buyer_group = rec.get("buyer_group", False)
     flat["Buyer Group"] = buyer_group["display_name"] if buyer_group else ""
+    company = rec.get("company_id", False)
+    flat["Company"] = company["display_name"] if company else ""
     return flat
 
 # --------- Paste to Google Sheet ---------
